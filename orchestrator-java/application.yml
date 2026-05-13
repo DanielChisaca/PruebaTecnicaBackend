@@ -1,0 +1,11 @@
+resilience4j:
+  circuitbreaker:
+    instances:
+      backendCore:
+        registerHealthIndicator: true
+        slidingWindowSize: 10 
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5 # Mínimo de llamadas antes de calcular el error
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50

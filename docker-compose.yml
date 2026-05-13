@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # --- INFRAESTRUCTURA ---
+  db:
+    image: postgres:15-alpine
+    container_name: bank-db
+    environment:
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: bank_db
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: bank-redis
+    ports:
+      - "6379:6379"
+
+  # --- MICROSERVICIOS ---
+  auth-service:
+    platform: linux/amd64
+    build:
+      context: ./auth-service
+    container_name: auth-node
+    environment:
+      DATABASE_URL: postgres://user_admin:password123@db:5432/bank_db
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+      - redis
+
+  core-service:
+    platform: linux/amd64
+    build:
+      context: ./core-service
+    container_name: core-python
+    environment:
+      DATABASE_URL: postgresql://user_admin:password123@db:5432/bank_db
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+
+  orchestrator:
+    platform: linux/amd64
+    build:
+      context: ./orchestrator-java
+    container_name: orchestrator-java
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:3001
+      CORE_SERVICE_URL: http://core-service:8001
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - core-service

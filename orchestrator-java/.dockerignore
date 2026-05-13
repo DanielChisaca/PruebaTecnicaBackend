@@ -1,0 +1,24 @@
+# Artefactos de construcción
+target/
+*.jar
+*.war
+
+# Herramientas de Maven/Gradle
+.mvn/
+mvnw
+mvnw.cmd
+.gradle/
+build/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project/
+.classpath/
+
+# Logs y OS
+*.log
+.DS_Store
+.git

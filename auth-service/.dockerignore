@@ -1,0 +1,21 @@
+# Dependencias
+node_modules
+npm-debug.log
+
+# Compilación y builds
+dist
+build
+.next
+.nuxt
+
+# Variables de entorno locales
+.env
+.env.local
+.env.*.local
+
+# Logs y misc
+logs
+*.log
+.DS_Store
+.git
+.gitignore
