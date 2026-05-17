@@ -143,6 +143,7 @@ docker-compose logs -f core-service
 * Las contraseñas son almacenadas de forma cifrada.
 * Las sesiones son gestionadas de manera segura utilizando Redis.
 * Separación de responsabilidades entre servicios para reducir acoplamiento.
+* Se aplica terminación de TLS en la capa de transporte/infraestructura mediante un Proxy Inverso (Nginx), aislando los microservicios en una red privada de Docker, garantizando código limpio y desacoplado de la gestión de infraestructura de seguridad.
 
 ---
 
