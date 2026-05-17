@@ -1,0 +1,62 @@
+# Archivos compilados (Bytecode)
+*.class
+*.log
+*.ctxt
+
+# Archivos de empaquetado y distribución
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Directorios de compilación comunes
+target/
+bin/
+build/
+out/
+
+# Herramienta de compilación: Maven
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Herramienta de compilación: Gradle
+.gradle/
+/build/
+!gradle-wrapper.jar
+
+# Herramientas de desarrollo (IDE: Eclipse)
+.metadata/
+.classpath
+.project
+.settings/
+*.launch
+.factorypath
+
+# Herramientas de desarrollo (IDE: IntelliJ IDEA)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Herramientas de desarrollo (IDE: NetBeans)
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
