@@ -1,11 +1,23 @@
+server:
+  port: 8080
+
+# Configuración de URLs de Microservicios para Docker de forma dinámica
+services:
+  auth-url: ${AUTH_SERVICE_URL:http://localhost:3001}
+  core-url: ${CORE_SERVICE_URL:http://localhost:8001}
+
+# Configuración nativa de Logs Estructurados en JSON para Spring Boot 3
+logging:
+  structured:
+    format: json
+
+# Configuración del Circuit Breaker (Resilience4j)
 resilience4j:
   circuitbreaker:
     instances:
-      backendCore:
-        registerHealthIndicator: true
-        slidingWindowSize: 10 
-        permittedNumberOfCallsInHalfOpenState: 3
+      coreServiceCB:
         slidingWindowType: COUNT_BASED
-        minimumNumberOfCalls: 5 # Mínimo de llamadas antes de calcular el error
-        waitDurationInOpenState: 5s
-        failureRateThreshold: 50
+        slidingWindowSize: 10              # Evalúa las últimas 10 llamadas
+        failureRateThreshold: 50           # Abre el circuito si el 50% falla
+        waitDurationInOpenState: 10000ms   # Se queda abierto por 10 segundos antes de intentar Half-Open
+        permittedNumberOfCallsInHalfOpenState: 3
