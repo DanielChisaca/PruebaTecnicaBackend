@@ -1,0 +1,255 @@
+:root {
+  /* 🌟 Tus nuevos colores principales */
+  --primary: #e53e3e;       /* Rojo vibrante para botones y títulos importantes */
+  --secondary: #c53030;     /* Rojo más oscuro para efectos hover */
+  --bg: #121214;            /* Negro profundo para el fondo de la app (Ultra Dark) */
+  --card: #1a1a1e;          /* Gris casi negro para las tarjetas, resalta sobre el fondo */
+  --text: #f7fafc;          /* Blanco hueso para que el texto sea perfectamente legible */
+  --text-muted: #a0aec0;    /* Gris claro para textos secundarios (fechas, subtítulos) */
+}
+
+body { 
+  margin: 0; 
+  font-family: 'Arial', sans-serif; 
+  background-color: var(--bg); 
+  color: var(--text); 
+}
+
+.app-layout { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  min-height: 100vh; 
+  padding: 20px; 
+  box-sizing: border-box; 
+}
+
+.auth-card { 
+  background: var(--card); 
+  padding: 40px; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4); /* Sombra más oscura para modo oscuro */
+  width: 100%; 
+  max-width: 400px; 
+  text-align: center; 
+}
+
+.auth-card h2 { 
+  color: var(--text); /* Cambiado a blanco para mejor contraste */
+  margin-bottom: 25px; 
+}
+
+form input { 
+  width: 100%; 
+  padding: 12px; 
+  margin-bottom: 15px; 
+  border: 1px solid #2d3748; /* Borde oscuro */
+  background: #2d3748;       /* Fondo del input oscuro */
+  color: var(--text);
+  border-radius: 6px; 
+  box-sizing: border-box; 
+  font-size: 14px; 
+}
+
+form input::placeholder {
+  color: #718096;
+}
+
+button { 
+  width: 100%; 
+  padding: 12px; 
+  background: var(--primary); 
+  color: white; 
+  border: none; 
+  border-radius: 6px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  font-size: 14px; 
+  transition: background 0.2s; 
+}
+
+button:hover { 
+  background: var(--secondary); 
+}
+
+.switch-link { 
+  margin-top: 15px; 
+  font-size: 13px; 
+  color: var(--primary); 
+  cursor: pointer; 
+  text-decoration: underline; 
+}
+
+.dashboard-container { 
+  width: 100%; 
+  max-width: 900px; 
+}
+
+.dash-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 30px; 
+  border-bottom: 2px solid #2d3748; 
+  padding-bottom: 15px; 
+}
+
+.dash-header h1 { 
+  color: var(--text); 
+  font-size: 24px; 
+  margin: 0; 
+}
+
+/* El botón de cerrar sesión ahora es gris oscuro y se pone rojo al hover */
+.logout-btn { 
+  width: auto; 
+  background: #2d3748; 
+  padding: 8px 15px; 
+}
+
+.logout-btn:hover { 
+  background: #e53e3e; 
+}
+
+/* 🌟 TARJETA DE BALANCE REDISEÑADA (Degradado Negro a Rojo) */
+.balance-box { 
+  background: linear-gradient(135deg, #1a1a1e 0%, #741b1b 100%); 
+  border: 1px solid #9b2c2c;
+  color: white; 
+  padding: 30px; 
+  border-radius: 12px; 
+  margin-bottom: 30px; 
+  position: relative; 
+}
+
+.balance-box h3 { 
+  margin: 0; 
+  font-size: 14px; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+  color: #fc8181; /* Rojo muy claro para el subtítulo */
+}
+
+.balance-box .amount { 
+  font-size: 36px; 
+  font-weight: bold; 
+  margin: 10px 0 0 0; 
+  color: #fff;
+}
+
+.refresh-btn { 
+  width: auto; 
+  position: absolute; 
+  right: 30px; 
+  bottom: 30px; 
+  background: rgba(255,255,255,0.1); 
+  padding: 6px 12px; 
+  font-size: 12px; 
+}
+
+.refresh-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.grid-modules { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 25px; 
+}
+
+@media (max-width: 768px) { 
+  .grid-modules { grid-template-columns: 1fr; } 
+}
+
+.module-card { 
+  background: var(--card); 
+  padding: 25px; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+}
+
+.module-card h3 { 
+  margin-top: 0; 
+  color: var(--text); 
+  border-bottom: 2px solid #2d3748; 
+  padding-bottom: 10px; 
+}
+
+.movements-list { 
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+  max-height: 250px; 
+  overflow-y: auto; 
+}
+
+.movement-item { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 12px 0; 
+  border-bottom: 1px solid #2d3748; 
+}
+
+.move-info { 
+  display: flex; 
+  flex-direction: column; 
+}
+
+.move-info .dest { 
+  font-weight: bold; 
+  font-size: 14px; 
+}
+
+.move-info .date { 
+  font-size: 11px; 
+  color: var(--text-muted); 
+  margin-top: 2px; 
+}
+
+.move-amount-negative { 
+  color: #fc8181; /* Rojo más suave para que no queme los ojos en fondo oscuro */
+  font-weight: bold; 
+  font-size: 15px; 
+}
+
+.error { 
+  color: #fc8181; 
+  font-size: 13px; 
+  margin-bottom: 15px; 
+}
+
+.info { 
+  color: #68d391; /* Verde neón sutil para éxitos */
+  font-size: 13px; 
+  margin-bottom: 15px; 
+}
+
+.status-msg { 
+  margin-top: 10px; 
+  font-size: 13px; 
+  font-weight: bold; 
+  text-align: center; 
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.form-grid input, .form-grid select {
+  margin-bottom: 0 !important; 
+  width: 100%;
+}
+
+.form-grid select {
+  padding: 12px;
+  border: 1px solid #2d3748;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 14px;
+  background-color: #2d3748;
+  color: var(--text);
+}

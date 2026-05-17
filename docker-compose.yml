@@ -9,14 +9,20 @@ services:
       POSTGRES_USER: user_admin
       POSTGRES_PASSWORD: password123
       POSTGRES_DB: bank_db
-    ports:
-      - "5432:5432"
+    # 🔒 Bloqueado al exterior. Solo visible dentro de 'bank-network'.
+    expose:
+      - "5432"
+    networks:
+      - bank-network
 
   redis:
     image: redis:7-alpine
     container_name: bank-redis
-    ports:
-      - "6379:6379"
+    # 🔒 Bloqueado al exterior. Solo visible dentro de 'bank-network'.
+    expose:
+      - "6379"
+    networks:
+      - bank-network
 
   # --- MICROSERVICIOS ---
   auth-service:
@@ -27,11 +33,15 @@ services:
     environment:
       DATABASE_URL: postgres://user_admin:password123@db:5432/bank_db
       REDIS_URL: redis://redis:6379
-    ports:
-      - "3001:3001"
+      CORE_SERVICE_URL: http://core-python:8001
+    # 🔒 Bloqueado al exterior. Nginx del Front o el Orquestador le hablan internamente.
+    expose:
+      - "3001"
     depends_on:
       - db
       - redis
+    networks:
+      - bank-network
 
   core-service:
     platform: linux/amd64
@@ -40,10 +50,13 @@ services:
     container_name: core-python
     environment:
       DATABASE_URL: postgresql://user_admin:password123@db:5432/bank_db
-    ports:
-      - "8001:8001"
+    # 🔒 Bloqueado al exterior. El Orquestador o Node le hablan internamente.
+    expose:
+      - "8001"
     depends_on:
       - db
+    networks:
+      - bank-network
 
   orchestrator:
     platform: linux/amd64
@@ -51,10 +64,32 @@ services:
       context: ./orchestrator-java
     container_name: orchestrator-java
     environment:
-      AUTH_SERVICE_URL: http://auth-service:3001
-      CORE_SERVICE_URL: http://core-service:8001
-    ports:
-      - "8080:8080"
+      SERVICES_AUTH_URL: http://auth-node:3001
+      SERVICES_CORE_URL: http://core-python:8001
+    # 🔒 Bloqueado al exterior. Protegemos la lógica del negocio de Java de accesos directos.
+    expose:
+      - "8080"
     depends_on:
       - auth-service
       - core-service
+    networks:
+      - bank-network
+
+  # --- CAPA DE CLIENTE (FRONTEND / NGINX PERIMETRAL) ---
+  frontend:
+    platform: linux/amd64
+    build:
+      context: ./frontend
+    container_name: frontend-react
+    # 🔓 EL ÚNICO PORTERO AUTORIZADO: Mapea el puerto local 3000 hacia el internet
+    ports:
+      - "3000:80"
+    depends_on:
+      - orchestrator
+    networks:
+      - bank-network
+
+# --- RED DE DOCKER AISLADA (DRIVER BRIDGE) ---
+networks:
+  bank-network:
+    driver: bridge
