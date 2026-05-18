@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 package com.bank.orchestrator.config;
 
 import org.slf4j.MDC;
@@ -13,7 +17,6 @@ public class WebClientConfig {
     public WebClient webClient() {
         return WebClient.builder()
                 .filter((request, next) -> {
-                    // Propagar el correlation ID dinámicamente en las llamadas salientes
                     String corrId = MDC.get("correlationId");
                     ClientRequest filteredRequest = ClientRequest.from(request)
                             .header("X-Correlation-ID", corrId != null ? corrId : "internal-orq")

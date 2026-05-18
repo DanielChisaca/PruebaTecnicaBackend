@@ -1,0 +1,36 @@
+# Dependencias
+node_modules/
+jspm_packages/
+
+# Entornos y claves
+.env
+.env.local
+.env.*.local
+
+# Registros (Logs)
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-global-log*
+
+# Cobertura y pruebas
+coverage/
+.nyc_output/
+
+# Carpetas de compilación
+dist/
+build/
+out/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

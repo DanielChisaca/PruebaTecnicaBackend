@@ -9,7 +9,6 @@ services:
       POSTGRES_USER: user_admin
       POSTGRES_PASSWORD: password123
       POSTGRES_DB: bank_db
-    # 🔒 Bloqueado al exterior. Solo visible dentro de 'bank-network'.
     expose:
       - "5432"
     networks:
@@ -18,7 +17,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: bank-redis
-    # 🔒 Bloqueado al exterior. Solo visible dentro de 'bank-network'.
     expose:
       - "6379"
     networks:
@@ -34,7 +32,6 @@ services:
       DATABASE_URL: postgres://user_admin:password123@db:5432/bank_db
       REDIS_URL: redis://redis:6379
       CORE_SERVICE_URL: http://core-python:8001
-    # 🔒 Bloqueado al exterior. Nginx del Front o el Orquestador le hablan internamente.
     expose:
       - "3001"
     depends_on:
@@ -50,11 +47,53 @@ services:
     container_name: core-python
     environment:
       DATABASE_URL: postgresql://user_admin:password123@db:5432/bank_db
-    # 🔒 Bloqueado al exterior. El Orquestador o Node le hablan internamente.
     expose:
       - "8001"
     depends_on:
       - db
+    networks:
+      - bank-network
+
+  core-tests:
+    platform: linux/amd64
+    build:
+      context: ./core-service
+    container_name: core-python-tests
+    environment:
+      DATABASE_URL: "sqlite:///:memory:"
+      PYTHONPATH: ".:/app"
+    command: pytest /app/test -v
+    depends_on:
+      - db
+    networks:
+      - bank-network
+
+  auth-tests:
+    platform: linux/amd64
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile.test
+    container_name: auth-node-tests
+    environment:
+      NODE_ENV: test
+    networks:
+      - bank-network
+
+  orchestrator-tests:
+    platform: linux/amd64
+    build:
+      context: ./orchestrator-java
+      dockerfile: Dockerfile.test
+    container_name: orchestrator-java-tests
+    networks:
+      - bank-network
+
+  frontend-tests:
+    platform: linux/amd64
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    container_name: frontend-react-tests
     networks:
       - bank-network
 
@@ -66,30 +105,38 @@ services:
     environment:
       SERVICES_AUTH_URL: http://auth-node:3001
       SERVICES_CORE_URL: http://core-python:8001
-    # 🔒 Bloqueado al exterior. Protegemos la lógica del negocio de Java de accesos directos.
     expose:
       - "8080"
     depends_on:
       - auth-service
       - core-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v3/api-docs >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 70s
     networks:
       - bank-network
 
-  # --- CAPA DE CLIENTE (FRONTEND / NGINX PERIMETRAL) ---
   frontend:
     platform: linux/amd64
     build:
       context: ./frontend
     container_name: frontend-react
-    # 🔓 EL ÚNICO PORTERO AUTORIZADO: Mapea el puerto local 3000 hacia el internet
     ports:
       - "3000:80"
     depends_on:
-      - orchestrator
+      orchestrator:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      core-service:
+        condition: service_started
     networks:
       - bank-network
 
-# --- RED DE DOCKER AISLADA (DRIVER BRIDGE) ---
+# --- CONFIGURACIÓN DE REDES ---
 networks:
   bank-network:
     driver: bridge

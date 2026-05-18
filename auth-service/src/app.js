@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -27,7 +31,11 @@ app.get('/health', (req, res) => {
   res.json({ status: "UP", service: "auth-node" });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Auth Service levantado de forma limpia en el puerto ${PORT}`);
-  console.log(`📖 Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Auth Service levantado de forma limpia en el puerto ${PORT}`);
+    console.log(`📖 Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
+  });
+}
+
+module.exports = app;

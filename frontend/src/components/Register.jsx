@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 import { useState } from 'react';
 import { authService } from '../services/api';
 
@@ -30,12 +34,11 @@ export default function Register({ onSwitch }) {
 
   return (
     <div className="auth-card">
-      <h2>Registro FinTech</h2>
+      <h2>Registro Banca Móvil</h2>
       {msg && <p className={msg.includes('Error') ? "error" : "info"}>{msg}</p>}
       
       <form onSubmit={handleSubmit}>
         
-        {/* 🚨 Aquí entra el nuevo Grid mágico */}
         <div className="form-grid">
           <input type="text" placeholder="Usuario" value={username} onChange={e => setUsername(e.target.value)} required />
           <input type="email" placeholder="Correo" value={email} onChange={e => setEmail(e.target.value)} required />
