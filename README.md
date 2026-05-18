@@ -187,12 +187,56 @@ Cubre los siguientes módulos con pruebas unitarias:
 
 ## 3️⃣ Acceso a los servicios
 
-| Servicio            | URL                                            | Swagger                                                                        |
-| ------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| Orchestrator (Java) | [http://localhost:8080](http://localhost:8080) | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) |
-| Auth (Node.js)      | [http://localhost:3001](http://localhost:3001) | [http://localhost:3001/api-docs](http://localhost:3001/api-docs)               |
-| Core (Python)       | [http://localhost:8001](http://localhost:8001) | [http://localhost:8001/docs](http://localhost:8001/docs)                       |
-| Frontend            | [http://localhost:80](http://localhost:80)     | N/A                                                                            |
+Solo el frontend expone puerto al host. Todos los microservicios se acceden a través del proxy inverso Nginx que corre en el contenedor `frontend-react` en el puerto **3000**.
+
+| Servicio            | URL de acceso                                      | Swagger UI                                                                                   | OpenAPI JSON                                                                 |
+| ------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Frontend (React)    | [http://localhost:3000](http://localhost:3000)     | N/A                                                                                          | N/A                                                                          |
+| Auth (Node.js)      | http://localhost:3000/api/v1/auth/                 | [http://localhost:3000/api-docs](http://localhost:3000/api-docs)                             | N/A                                                                          |
+| Orchestrator (Java) | http://localhost:3000/api/v1/orchestrator/         | [http://localhost:3000/swagger-ui/index.html](http://localhost:3000/swagger-ui/index.html)   | [http://localhost:3000/v3/api-docs](http://localhost:3000/v3/api-docs)       |
+| Core (Python)       | http://localhost:3000/ (vía orchestrator)          | [http://localhost:3000/docs](http://localhost:3000/docs)                                     | [http://localhost:3000/openapi.json](http://localhost:3000/openapi.json)     |
+
+### 🧪 Cómo probar los endpoints protegidos desde Swagger
+
+Los endpoints del **Orchestrator** requieren un token JWT (Bearer Token).
+Para obtenerlo:
+
+1. Abre el Swagger de **Auth** ([http://localhost:3000/api-docs](http://localhost:3000/api-docs)).
+2. Registra un usuario con `POST /api/v1/auth/register`.
+3. Inicia sesión con `POST /api/v1/auth/login` y copia el `token` de la respuesta.
+4. Abre el Swagger del **Orchestrator** ([http://localhost:3000/swagger-ui/index.html](http://localhost:3000/swagger-ui/index.html)), pulsa **Authorize** y pega `Bearer <token>`.
+5. Ya puedes ejecutar `GET /accounts/balance/{userId}`, `POST /transfers`, etc.
+
+### 📋 Endpoints por servicio
+
+**Auth Service (Node.js) — base `/api/v1/auth`**
+
+| Método | Ruta | Descripción |
+| ------ | ---- | ----------- |
+| `POST` | `/api/v1/auth/register` | Registro de usuario |
+| `POST` | `/api/v1/auth/login`    | Inicio de sesión y emisión de token |
+| `POST` | `/api/v1/auth/logout`   | Cierre de sesión |
+| `POST` | `/api/v1/auth/validate` | Validación de token (uso interno del orchestrator) |
+| `GET`  | `/health`               | Healthcheck del servicio |
+
+**Core Service (Python / FastAPI)**
+
+| Método | Ruta | Descripción |
+| ------ | ---- | ----------- |
+| `POST` | `/core1/users/register` | Persistencia física del usuario en BD |
+| `POST` | `/core1/users/login`    | Login interno (verificación de hash) |
+| `POST` | `/core2/balance`        | Consulta de saldo por `userId` |
+| `POST` | `/core2/movements`      | Historial de movimientos por `userId` |
+| `POST` | `/core3/transfers`      | Ejecuta una transferencia por número de teléfono |
+
+**Orchestrator Service (Java / Spring Boot) — base `/api/v1/orchestrator`** (requiere `Authorization: Bearer <token>`)
+
+| Método | Ruta | Descripción |
+| ------ | ---- | ----------- |
+| `GET`  | `/api/v1/orchestrator/accounts/balance/{userId}` | Consulta de saldo orquestada (con Circuit Breaker) |
+| `POST` | `/api/v1/orchestrator/transfers`                 | Transferencia orquestada (con Circuit Breaker) |
+| `GET`  | `/api/v1/orchestrator/movements/{userId}`        | Historial de movimientos orquestado |
+| `GET`  | `/api/v1/orchestrator/notifications/{userId}`    | Notificaciones locales generadas en Java |
 
 ---
 
