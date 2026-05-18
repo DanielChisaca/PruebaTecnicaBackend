@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 package com.bank.orchestrator.controller; 
 
 import com.bank.orchestrator.client.AuthServiceClient;
@@ -8,7 +12,7 @@ import com.bank.orchestrator.dto.TransferRequest;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest; // 🚀 El import correcto para Spring MVC
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,16 +36,16 @@ public class OrchestratorController {
         this.authServiceClient = authServiceClient;
     }
 
-    @GetMapping("/balance/{userId}")
+    @GetMapping("/accounts/balance/{userId}")
     @Operation(summary = "Consulta de saldo segura orquestada hacia Core")
     @CircuitBreaker(name = "coreServiceCB", fallbackMethod = "balanceFallback")
     public Mono<ResponseEntity<BalanceResponse>> getOrchestratedBalance(
             @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
-            HttpServletRequest servletRequest) { // 🛠️ Cambiado a HttpServletRequest
+            HttpServletRequest servletRequest) {
         
         long startTime = System.currentTimeMillis();
-        String operation = "GET /api/v1/orchestrator/balance/" + userId;
+        String operation = "GET /api/v1/orchestrator/accounts/balance/" + userId;
         String traceId = servletRequest.getHeader("X-Correlation-ID");
         
         JsonLogger.info("Procesando consulta de saldo orquestada para el usuario ID: " + userId, traceId, "N/A", operation, null, 200);
@@ -55,16 +59,16 @@ public class OrchestratorController {
                 });
     }
 
-    @PostMapping("/transfer")
+    @PostMapping("/transfers")
     @Operation(summary = "Ejecución transaccional de transferencias por teléfono con protección Circuit Breaker y token Redis")
     @CircuitBreaker(name = "coreServiceCB", fallbackMethod = "transferFallback")
     public Mono<ResponseEntity<String>> executeOrchestratedTransfer(
             @RequestHeader("Authorization") String token,
             @RequestBody TransferRequest request,
-            HttpServletRequest servletRequest) { // 🛠️ Cambiado a HttpServletRequest
+            HttpServletRequest servletRequest) {
         
         long startTime = System.currentTimeMillis();
-        String operation = "POST /api/v1/orchestrator/transfer";
+        String operation = "POST /api/v1/orchestrator/transfers";
         String traceId = servletRequest.getHeader("X-Correlation-ID");
         
         JsonLogger.info("Iniciando flujo de orquestación de transferencia", traceId, "N/A", operation, null, 200);
@@ -83,45 +87,82 @@ public class OrchestratorController {
     }
 
     @GetMapping("/movements/{userId}")
-    @Operation(summary = "Consulta de movimientos histórica orquestada")
+    @Operation(summary = "Consulta de movimientos histórica orquestada mediante GET")
     @CircuitBreaker(name = "coreServiceCB", fallbackMethod = "movementsFallback")
     public Mono<ResponseEntity<List<MovementResponse>>> getOrchestratedMovements(
             @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
-            HttpServletRequest servletRequest) { // 🛠️ Cambiado a HttpServletRequest
+            HttpServletRequest servletRequest) {
         
         long startTime = System.currentTimeMillis();
         String operation = "GET /api/v1/orchestrator/movements/" + userId;
         String traceId = servletRequest.getHeader("X-Correlation-ID");
         
-        JsonLogger.info("Orquestando la consulta de movimientos para el usuario ID: " + userId, traceId, "N/A", operation, null, 200);
+        JsonLogger.info("Orquestando la consulta GET de movimientos para el usuario ID: " + userId, traceId, "N/A", operation, null, 200);
         
         return authServiceClient.validateSession(token)
                 .flatMapMany(session -> coreServiceClient.getMovements(userId)) 
                 .collectList()
                 .map(res -> {
                     long duration = System.currentTimeMillis() - startTime;
-                    JsonLogger.info("Consulta de movimientos mixtos completada exitosamente. Registros: " + res.size(), traceId, "N/A", operation, duration, 200);
+                    JsonLogger.info("Consulta de movimientos completada exitosamente. Registros: " + res.size(), traceId, "N/A", operation, duration, 200);
                     return ResponseEntity.ok(res);
                 });
     }
+    
+    @GetMapping("/notifications/{userId}")
+    @Operation(summary = "Historial de alertas de movimientos procesado localmente en Java")
+    public Mono<ResponseEntity<List<String>>> getLocalNotifications(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long userId,
+            HttpServletRequest servletRequest) {
+        
+        long startTime = System.currentTimeMillis();
+        String operation = "GET /api/v1/orchestrator/notifications/" + userId;
+        String traceId = servletRequest.getHeader("X-Correlation-ID");
+        
+        JsonLogger.info("Iniciando generación local de notificaciones en Java para el usuario ID: " + userId, traceId, "N/A", operation, null, 200);
+        
+        return authServiceClient.validateSession(token)
+                .flatMap(session -> {
+                    String username = session instanceof Map ? String.valueOf(((Map<?,?>)session).get("username")) : "Usuario";
+                    
+                    List<String> localAlerts = List.of(
+                        "¡Hola! Tu transferencia por teléfono se ejecutó con éxito.",
+                        "Alerta de Seguridad: Inicio de sesión aprobado desde la IP del cliente.",
+                        "Tu saldo ha sido actualizado de forma segura."
+                    );
+                    
+                    long duration = System.currentTimeMillis() - startTime;
+                    JsonLogger.info("Notificaciones locales generadas exitosamente en Java. Total: " + localAlerts.size(), traceId, username, operation, duration, 200);
+                    
+                    return Mono.just(ResponseEntity.ok(localAlerts));
+                })
+                .onErrorResume(ex -> {
+                    JsonLogger.error("Fallo al validar sesión para notificaciones locales. Detalle: " + ex.getMessage(), 
+                                     traceId, "N/A", operation, 401, "AUTH_VALIDATION_FAILED");
+                    return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(List.of("Error: No autorizado para ver notificaciones.")));
+                });
+    }
 
-    // ========== MÉTODOS FALLBACK DEL CIRCUIT BREAKER (ADAPTADOS) ==========
+    // ========== MÉTODOS FALLBACK DEL CIRCUIT BREAKER ==========
     
     public Mono<ResponseEntity<BalanceResponse>> balanceFallback(String token, Long userId, HttpServletRequest servletRequest, Throwable ex) {
         String traceId = servletRequest.getHeader("X-Correlation-ID");
-        JsonLogger.error("CIRCUIT BREAKER ACTIVADO - Fallback de Consulta de Saldo. Detalle: " + ex.getMessage(), traceId, "N/A", "GET /api/v1/orchestrator/balance/" + userId, 503, "ERR_CIRCUIT_BREAKER");
+        JsonLogger.error("CIRCUIT BREAKER ACTIVADO - Fallback de Consulta de Saldo. Detalle: " + ex.getMessage(), traceId, "N/A", "GET /api/v1/orchestrator/accounts/balance/" + userId, 503, "ERR_CIRCUIT_BREAKER");
         
-        BalanceResponse mockFallbackResponse = BalanceResponse.builder().accountId(-1L).balance(0.0).build();
+        BalanceResponse mockFallbackResponse = new BalanceResponse();
+        mockFallbackResponse.setAccountId(-1L);
+        mockFallbackResponse.setBalance(0.0);
         return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(mockFallbackResponse));
     }
 
     public Mono<ResponseEntity<String>> transferFallback(String token, TransferRequest request, HttpServletRequest servletRequest, Throwable ex) {
         String traceId = servletRequest.getHeader("X-Correlation-ID");
-        JsonLogger.error("CIRCUIT BREAKER ACTIVADO - Microservicio Core (Python) degradado o caído. Bloqueando transferencia.", traceId, "N/A", "POST /api/v1/orchestrator/transfer", 503, "ERR_CIRCUIT_BREAKER");
+        JsonLogger.error("CIRCUIT BREAKER ACTIVADO - Microservicio Core (Python) caído. Bloqueando transferencia.", traceId, "N/A", "POST /api/v1/orchestrator/transfers", 503, "ERR_CIRCUIT_BREAKER");
         
         return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body("{\"status\": \"error\", \"message\": \"Servicio transaccional temporalmente no disponible (Circuit Breaker Abierto)\"}"));
+                .body("Servicio transaccional temporalmente no disponible (Circuit Breaker Abierto)"));
     }
 
     public Mono<ResponseEntity<List<MovementResponse>>> movementsFallback(String token, Long userId, HttpServletRequest servletRequest, Throwable ex) {

@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { bankService } from '../services/api';
@@ -35,17 +39,12 @@ export default function Movements({ refreshTrigger }) {
             const cleanDest = String(move.destination_phone).replace(/[^0-9]/g, '');
             const cleanUserPhone = String(user?.phone_number).replace(/[^0-9]/g, '');
             
-            // Comparación cruda
             const isIngreso = cleanDest === cleanUserPhone;
 
             return (
               <li key={move.id} className="movement-item" style={{ border: '1px solid #ffa500', marginBottom: '12px', padding: '10px', borderRadius: '6px' }}>
                 <div className="move-info">
                   
-                  {/* 🚨 RECUADRO DE DIAGNÓSTICO EN PANTALLA 🚨 */}
-                  <div style={{ fontSize: '12px', color: '#ffa500', background: '#1e1e1e', padding: '6px', marginBottom: '8px', fontFamily: 'monospace', borderRadius: '4px' }}>
-                    <strong>DEBUG:</strong> DestinoBD=[{cleanDest}] | MiCel=[{cleanUserPhone}] | ¿Iguales?: {isIngreso ? 'SI ✅' : 'NO ❌'}
-                  </div>
 
                   <span className="dest">
                     {isIngreso ? '📥 Recibiste dinero' : `📤 Enviaste a: ${move.destination_phone}`}

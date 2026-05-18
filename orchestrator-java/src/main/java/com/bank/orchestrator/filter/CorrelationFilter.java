@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 package com.bank.orchestrator.filter;
 
 import jakarta.servlet.*;
@@ -18,13 +22,11 @@ public class CorrelationFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        // Leer o generar el Correlation ID
         String correlationId = httpRequest.getHeader(CORRELATION_ID_HEADER);
         if (correlationId == null || correlationId.isEmpty()) {
             correlationId = UUID.randomUUID().toString();
         }
 
-        // Registrar en el contexto de logs para que salga en el JSON
         MDC.put("correlationId", correlationId);
         httpResponse.setHeader(CORRELATION_ID_HEADER, correlationId);
 

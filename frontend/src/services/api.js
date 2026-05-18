@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 import axios from 'axios';
 
 const API_URL = '/api/v1/orchestrator';
@@ -17,7 +21,6 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = token;
   }
-  // Generamos un Correlation-ID único para cada solicitud desde el frontend para trazabilidad
   config.headers['X-Correlation-ID'] = `front-tx-${Date.now()}`;
   return config;
 }, (error) => {
@@ -31,10 +34,14 @@ export const authService = {
 };
 
 export const bankService = {
-  getBalance: (userId) => api.get(`/balance/${userId}`),
+  getBalance: (userId) => api.get(`/accounts/balance/${userId}`),
+  
   getMovements: (userId) => api.get(`/movements/${userId}`),
+  
   executeTransfer: (originUserId, destinationPhone, amount) => 
-    api.post('/transfer', { origin_user_id: originUserId, destination_phone: destinationPhone, amount: parseFloat(amount) }),
+    api.post('/transfers', { origin_user_id: originUserId, destination_phone: destinationPhone, amount: parseFloat(amount) }),
+
+  getNotifications: (userId) => api.get(`/notifications/${userId}`),
 };
 
 export default api;

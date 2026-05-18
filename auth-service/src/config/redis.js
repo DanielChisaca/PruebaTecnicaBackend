@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 const redis = require('redis');
 
 const redisClient = redis.createClient({
@@ -6,7 +10,6 @@ const redisClient = redis.createClient({
 
 redisClient.on('error', (err) => console.error('Error Crítico de Conexión en Redis:', err));
 
-// Auto-conectar al inicializar el hilo de Node
 (async () => {
   await redisClient.connect();
   console.log('⚡ Conectado con éxito a Redis de Sesiones');

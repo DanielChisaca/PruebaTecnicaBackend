@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 package com.bank.orchestrator.client;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -31,32 +35,7 @@ public class AuthServiceClient {
                 .header("Authorization", token)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                // Si Node responde un error (401/403), lo capturamos para manejarlo en la orquestación
                 .bodyToMono(Map.class);
     }
 
-    /**
-     * Envía la petición de registro de usuario al Auth Service de Node.js
-     * para que cifre la contraseña con Bcrypt.
-     */
-    public Mono<Map> registerUser(Map<String, Object> registerPayload) {
-        return this.webClient.post()
-                .uri(authUrl + "/api/v1/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(registerPayload)
-                .retrieve()
-                .bodyToMono(Map.class);
-    }
-
-    /**
-     * Envía las credenciales a Node.js para verificar el hash y generar la sesión.
-     */
-    public Mono<Map> loginUser(Map<String, String> loginPayload) {
-        return this.webClient.post()
-                .uri(authUrl + "/api/v1/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(loginPayload)
-                .retrieve()
-                .bodyToMono(Map.class);
-    }
 }

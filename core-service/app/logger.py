@@ -3,6 +3,10 @@ import logging
 import sys
 from contextvars import ContextVar
 from fastapi import Request
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
 import structlog
 
 # Variables de contexto para Trazabilidad y Sesión
@@ -53,7 +57,7 @@ def setup_logging():
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
-            compliance_processor,  # 🚀 Inyectamos nuestro procesador de cumplimiento
+            compliance_processor,
             structlog.processors.JSONRenderer(ensure_ascii=False)
         ],
         context_class=dict, 
@@ -115,6 +119,6 @@ async def log_middleware(request: Request, call_next):
             durationMs=duration_ms,
             httpStatus=500,
             errorCode="CORE_RUNTIME_ERROR",
-            event=str(e)
+            exception=str(e)
         )
         raise e

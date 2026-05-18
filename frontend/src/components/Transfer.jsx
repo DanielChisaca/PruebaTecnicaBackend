@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { bankService } from '../services/api';
