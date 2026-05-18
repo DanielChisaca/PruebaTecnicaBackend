@@ -1,41 +1,57 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
-from decimal import Decimal
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import structlog
 from ..database import get_db
 from .. import models, schemas
 
-router = APIRouter(prefix="/accounts", tags=["Accounts"])
+# Mantenemos el router base quieto
+router = APIRouter(tags=["Accounts & Transfers"])
 logger = structlog.get_logger()
 
-@router.get("/balance/{user_id}", response_model=schemas.AccountBalanceResponse)
-def get_balance(user_id: int, db: Session = Depends(get_db)):
-    operation_name = f"GET /accounts/balance/{user_id}"
+
+@router.post("/core2/balance", response_model=schemas.AccountBalanceResponse)
+def get_balance(
+    payload: dict = Body(..., example={"userId": 1}),
+    db: Session = Depends(get_db)
+):
+    operation_name = "POST /core2/balance"
+    
+    # Extraemos de forma segura el userId del diccionario
+    user_id = payload.get("userId")
+    
+    if not user_id:
+        raise HTTPException(status_code=400, detail="El campo 'userId' es obligatorio en el cuerpo de la petición")
     
     account = db.query(models.Account).filter(models.Account.user_id == user_id).first()
     if not account:
         logger.error(
-            "Cuenta no encontrada", 
+            "Cuenta no encontrada",
             operation=operation_name,
             httpStatus=404,
             errorCode="ACCOUNT_NOT_FOUND",
-            event=f"No existe cuenta asociada al user_id: {user_id}"
+            detail=f"No existe cuenta asociada al user_id: {user_id}"
         )
         raise HTTPException(status_code=404, detail="Cuenta no encontrada para este usuario")
     
     logger.info(
-        "Consulta de saldo exitosa", 
+        "Consulta de saldo exitosa vía POST", 
         operation=operation_name,
         httpStatus=200,
         balance=float(account.balance)
     )
+    
     return {"account_id": account.id, "balance": account.balance}
 
-@router.post("/transfer", status_code=status.HTTP_201_CREATED)
+
+@router.post("/core3/transfers", status_code=status.HTTP_201_CREATED)
 def execute_transfer(payload: schemas.TransferRequest, db: Session = Depends(get_db)):
-    operation_name = "POST /accounts/transfer"
+    operation_name = "POST /core3/transfers"
 
     origin_acc = db.query(models.Account).filter(models.Account.user_id == payload.origin_user_id).first()
     if not origin_acc:
@@ -44,7 +60,7 @@ def execute_transfer(payload: schemas.TransferRequest, db: Session = Depends(get
             operation=operation_name,
             httpStatus=404,
             errorCode="ORIGIN_ACCOUNT_NOT_FOUND",
-            event=f"User ID {payload.origin_user_id} no registra cuenta activa"
+            detail=f"User ID {payload.origin_user_id} no registra cuenta activa"
         )
         raise HTTPException(status_code=404, detail="Cuenta origen no encontrada")
 
@@ -66,7 +82,7 @@ def execute_transfer(payload: schemas.TransferRequest, db: Session = Depends(get
             operation=operation_name,
             httpStatus=404,
             errorCode="DESTINATION_PHONE_NOT_FOUND",
-            event=f"Teléfono {payload.destination_phone} no está asignado a ningún usuario"
+            detail=f"Teléfono {payload.destination_phone} no está asignado a ningún usuario"
         )
         raise HTTPException(status_code=404, detail="El número telefónico de destino no está registrado")
     
@@ -115,10 +131,10 @@ def execute_transfer(payload: schemas.TransferRequest, db: Session = Depends(get
     except Exception as e:
         db.rollback()
         logger.error(
-            "Fallo crítico en base de datos. Transacción revertida", 
+            "Fallo crítico en base de datos. Transacción revertida",
             operation=operation_name,
             httpStatus=500,
             errorCode="TRANSACTION_DB_ROLLBACK",
-            event=str(e)
+            detail=str(e)
         )
         raise HTTPException(status_code=500, detail="Error interno al procesar la transferencia")

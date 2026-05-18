@@ -1,3 +1,7 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker

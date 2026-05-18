@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 package com.bank.orchestrator.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

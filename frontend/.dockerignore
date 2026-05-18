@@ -1,0 +1,44 @@
+# Dependencias locales (se reinstalan dentro del contenedor)
+node_modules/
+.npm/
+pnpm-lock.yaml
+yarn.lock
+
+# Archivos de compilación local
+dist/
+build/
+.next/
+out/
+
+# Registros y logs de error
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Git
+.git/
+.gitignore
+
+# Configuración del editor e IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Documentación del proyecto
+README.md
+LICENSE
+.github/
+
+# Archivos de configuración de Docker (opcional, pero buena práctica)
+Dockerfile
+.dockerignore

@@ -1,3 +1,7 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
 from fastapi import FastAPI
 from app.database import engine, Base
 from app.routers import accounts, movements
@@ -8,14 +12,14 @@ from app.routers import users
 # Inicializar configuración de structlog JSON
 setup_logging()
 
-# Crear tablas automáticamente al levantar el contenedor
+# Crear tablas automáticamente al arrancar el servicio
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Core Service & Persistence (Python)",
     description="Microservicio encargado de validaciones profundas de negocio y persistencia en PostgreSQL",
     version="1.0.0",
-    docs_url="/docs" # Requisito Swagger explícito
+    docs_url="/docs"
 )
 
 # Registrar middleware de observabilidad

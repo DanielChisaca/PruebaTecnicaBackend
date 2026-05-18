@@ -1,3 +1,7 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
 from pydantic import BaseModel, Field
 from decimal import Decimal
 from datetime import datetime

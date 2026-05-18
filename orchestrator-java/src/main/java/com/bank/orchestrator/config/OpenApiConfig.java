@@ -1,3 +1,7 @@
+// ════════════════════════════════════════════════════════════════════════════
+// Author: Daniel Chisacá Rubio
+// ════════════════════════════════════════════════════════════════════════════
+
 package com.bank.orchestrator.config;
 
 import io.swagger.v3.oas.models.OpenAPI;

@@ -104,7 +104,88 @@ docker-compose up --build
 
 ---
 
-## 2️⃣ Acceso a los servicios
+## 2️⃣ Ejecutar las pruebas del Orchestrator Service (Java)
+
+Las pruebas del orquestador son de integración de capa web: levantan el contexto Spring completo (con Circuit Breaker AOP activo) y mockean los clientes HTTP hacia Auth y Core, sin necesidad de infraestructura externa.
+
+```bash
+docker-compose build orchestrator-tests && docker-compose run --rm orchestrator-tests
+```
+
+Cubre los siguientes endpoints con mocks de `AuthServiceClient` y `CoreServiceClient`:
+
+| Endpoint | Pruebas |
+| -------- | ------- |
+| `GET /accounts/balance/{userId}` | Sesión válida → 200 con saldo, sin header → 400 |
+| `POST /transfers` | Transferencia exitosa → 201, Circuit Breaker abierto → 503 |
+| `GET /movements/{userId}` | Con movimientos → 200 con lista, sin movimientos → lista vacía |
+| `GET /notifications/{userId}` | Sesión válida → 200 con 3 alertas locales, sesión inválida → 401 |
+
+---
+
+## 3️⃣ Ejecutar las pruebas del Auth Service (Node.js)
+
+Las pruebas del servicio Node.js son unitarias y corren completamente aisladas: mockean Redis, axios y bcrypt, por lo que no requieren ninguna infraestructura externa.
+
+```bash
+docker-compose build auth-tests && docker-compose run --rm auth-tests
+```
+
+Cubre los siguientes endpoints con mocks de dependencias externas:
+
+| Endpoint | Pruebas |
+| -------- | ------- |
+| `GET /health` | Estado UP del servicio |
+| `POST /register` | Registro exitoso (hash bcrypt), duplicado propagado desde core |
+| `POST /login` | Éxito con token, contraseña incorrecta, bloqueo por 3 intentos, usuario bloqueado |
+| `POST /logout` | Sin token, cierre exitoso con eliminación en Redis |
+| `POST /validate` | Sin token, token expirado, token válido con datos de sesión |
+
+---
+
+## 3️⃣ Ejecutar las pruebas del Core Service (Python)
+
+Las pruebas del servicio Python corren en un contenedor aislado con SQLite en memoria, sin necesidad de levantar el stack completo.
+
+```bash
+docker-compose build core-tests && docker-compose run --rm core-tests
+```
+
+Cubre los siguientes módulos con pruebas de integración y unitarias:
+
+| Módulo | Pruebas |
+| ------ | ------- |
+| `/core1/users` | Registro, duplicados, login, campos obligatorios |
+| `/core2/balance` | Saldo existente, usuario no encontrado, campo faltante |
+| `/core2/movements` | Sin cuenta, sin transacciones, egresos, ingresos, orden |
+| `/core3/transfers` | Transferencia exitosa, fondos insuficientes, auto-transferencia, teléfono no registrado, saldo exacto |
+| Schemas Pydantic | Validaciones de campos, tipos y restricciones numéricas |
+
+---
+
+## 4️⃣ Ejecutar las pruebas del Frontend (React)
+
+Las pruebas del frontend corren con Vitest + @testing-library/react en un entorno jsdom, completamente aisladas: mockean el contexto de autenticación y los servicios HTTP, sin necesidad de infraestructura externa.
+
+```bash
+docker-compose build frontend-tests && docker-compose run --rm frontend-tests
+```
+
+Cubre los siguientes módulos con pruebas unitarias:
+
+| Módulo | Pruebas |
+| ------ | ------- |
+| `AuthContext` | Inicialización desde localStorage, login (token + usuario), login inválido, logout |
+| `Login` | Renderizado, submit con credenciales, login exitoso → contexto, error backend, error red |
+| `Register` | Renderizado de campos, registro exitoso con redirección, error de duplicado, datos enviados |
+| `Dashboard` | Bienvenida, fetch de balance, fetch de notificaciones, logout, sin usuario |
+| `Transfer` | Renderizado, estado de procesamiento, éxito → callback, fallo, argumentos correctos |
+| `Movements` | Estado vacío, lista de movimientos, egreso, ingreso por teléfono, sin usuario |
+| `App` | Login sin autenticar, Dashboard autenticado, navegación Login ↔ Register |
+
+---
+
+## 3️⃣ Acceso a los servicios
 
 | Servicio            | URL                                            | Swagger                                                                        |
 | ------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -170,3 +251,52 @@ Cada microservicio cuenta con documentación Swagger/OpenAPI accesible desde el 
 * Manejo centralizado de errores.
 * Trazabilidad mediante logs estructurados.
 * Preparado para ambientes containerizados y CI/CD.
+
+---
+
+# 🗄️ Queries Útiles para Base de Datos
+
+Para conectarte a la base de datos PostgreSQL:
+
+```bash
+docker exec -it bank-db psql -U user_admin -d bank_db
+```
+
+## Usuarios
+
+Ver todos los usuarios registrados con sus datos principales:
+
+```sql
+SELECT id, username, email, document_type, document_id, phone_number 
+FROM users;
+```
+
+## Cuentas Bancarias
+
+Ver todas las cuentas con sus saldos actuales:
+
+```sql
+SELECT id, user_id, balance 
+FROM accounts;
+```
+
+## Movimientos
+
+Ver el historial de transferencias realizadas:
+
+```sql
+SELECT id, origin_account_id, destination_phone, amount, timestamp 
+FROM transactions;
+```
+
+## Eliminación de Datos
+
+Limpiar la base de datos completamente:
+
+```sql
+DROP TABLE transactions;
+DROP TABLE accounts;
+DROP TABLE users;
+```
+
+---

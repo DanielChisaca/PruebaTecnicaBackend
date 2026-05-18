@@ -4,9 +4,14 @@
   "description": "Servicio de Autenticación para el sistema bancario",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "test": "jest --forceExit --runInBand"
   },
   "author": "Daniel Chisaca Rubio",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
+  },
   "dependencies": {
     "axios": "^1.6.8",
     "cors": "^2.8.5",

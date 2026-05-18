@@ -1,12 +1,19 @@
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* Author: Daniel Chisacá Rubio */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
 :root {
-  /* 🌟 Tus nuevos colores principales */
-  --primary: #e53e3e;       /* Rojo vibrante para botones y títulos importantes */
-  --secondary: #c53030;     /* Rojo más oscuro para efectos hover */
-  --bg: #121214;            /* Negro profundo para el fondo de la app (Ultra Dark) */
-  --card: #1a1a1e;          /* Gris casi negro para las tarjetas, resalta sobre el fondo */
-  --text: #f7fafc;          /* Blanco hueso para que el texto sea perfectamente legible */
-  --text-muted: #a0aec0;    /* Gris claro para textos secundarios (fechas, subtítulos) */
+  --primary: #e53e3e;
+  --secondary: #c53030;
+  --bg: #121214;
+  --card: #1a1a1e;
+  --text: #f7fafc;
+  --text-muted: #a0aec0;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* Author: Daniel Chisacá Rubio */
+/* ════════════════════════════════════════════════════════════════════════════ */
 
 body { 
   margin: 0; 
@@ -28,14 +35,14 @@ body {
   background: var(--card); 
   padding: 40px; 
   border-radius: 12px; 
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4); /* Sombra más oscura para modo oscuro */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   width: 100%; 
   max-width: 400px; 
   text-align: center; 
 }
 
 .auth-card h2 { 
-  color: var(--text); /* Cambiado a blanco para mejor contraste */
+  color: var(--text);
   margin-bottom: 25px; 
 }
 
@@ -43,8 +50,8 @@ form input {
   width: 100%; 
   padding: 12px; 
   margin-bottom: 15px; 
-  border: 1px solid #2d3748; /* Borde oscuro */
-  background: #2d3748;       /* Fondo del input oscuro */
+  border: 1px solid #2d3748;
+  background: #2d3748;
   color: var(--text);
   border-radius: 6px; 
   box-sizing: border-box; 
@@ -100,7 +107,6 @@ button:hover {
   margin: 0; 
 }
 
-/* El botón de cerrar sesión ahora es gris oscuro y se pone rojo al hover */
 .logout-btn { 
   width: auto; 
   background: #2d3748; 
@@ -111,7 +117,6 @@ button:hover {
   background: #e53e3e; 
 }
 
-/* 🌟 TARJETA DE BALANCE REDISEÑADA (Degradado Negro a Rojo) */
 .balance-box { 
   background: linear-gradient(135deg, #1a1a1e 0%, #741b1b 100%); 
   border: 1px solid #9b2c2c;
@@ -127,7 +132,7 @@ button:hover {
   font-size: 14px; 
   text-transform: uppercase; 
   letter-spacing: 1px; 
-  color: #fc8181; /* Rojo muy claro para el subtítulo */
+  color: #fc8181;
 }
 
 .balance-box .amount { 
@@ -208,7 +213,7 @@ button:hover {
 }
 
 .move-amount-negative { 
-  color: #fc8181; /* Rojo más suave para que no queme los ojos en fondo oscuro */
+  color: #fc8181;
   font-weight: bold; 
   font-size: 15px; 
 }
@@ -220,7 +225,7 @@ button:hover {
 }
 
 .info { 
-  color: #68d391; /* Verde neón sutil para éxitos */
+  color: #68d391;
   font-size: 13px; 
   margin-bottom: 15px; 
 }

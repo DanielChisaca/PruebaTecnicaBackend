@@ -1,6 +1,11 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
 from fastapi import APIRouter, status, Depends, HTTPException 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError 
+from pydantic import BaseModel
 from app.schemas import UserResponse
 from app.database import get_db
 from app.models import User
@@ -8,11 +13,15 @@ import structlog
 
 logger = structlog.get_logger()
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/core1/users", tags=["Users Core 1"])
 
-@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+class LoginRequest(BaseModel):
+    username: str
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user_data: dict, db: Session = Depends(get_db)):
-    operation_name = "POST /users"
+    operation_name = "POST /core1/users/register"
 
     username = user_data.get("username")
     phone_number = user_data.get("phone_number")
@@ -71,34 +80,35 @@ async def create_user(user_data: dict, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         logger.error(
-            "Error inesperado al persistir usuario", 
+            "Error inesperado al persistir usuario",
             operation=operation_name,
             httpStatus=500,
             errorCode="USER_PERSISTENCE_ERROR",
-            event=str(e)
+            detail=str(e)
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno del servidor al procesar el registro."
         )
-    
-@router.get("/{username}")
-def get_user_by_username(username: str, db: Session = Depends(get_db)):
-    operation_name = f"GET /users/{username}"
+
+@router.post("/login")
+def get_user_for_login(payload: LoginRequest, db: Session = Depends(get_db)):
+    username = payload.username
+    operation_name = "POST /core1/users/login"
     
     user = db.query(User).filter(User.username == username).first()
     if not user:
         logger.error(
-            "Usuario no encontrado en base de datos", 
+            "Usuario no encontrado en base de datos para login",
             operation=operation_name,
             httpStatus=404,
             errorCode="USER_NOT_FOUND",
-            event=f"El username '{username}' solicitado por el servicio de Auth no existe"
+            detail=f"El username '{username}' solicitado por el servicio de Auth no existe"
         )
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
     logger.info(
-        "Recuperación exitosa de credenciales y perfil de usuario", 
+        "Recuperación exitosa de credenciales para verificación de Login", 
         operation=operation_name,
         httpStatus=200,
         username=username

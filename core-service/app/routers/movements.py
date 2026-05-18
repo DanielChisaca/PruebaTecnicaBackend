@@ -1,18 +1,27 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Author: Daniel Chisacá Rubio
+# ════════════════════════════════════════════════════════════════════════════
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from pydantic import BaseModel
 import structlog
 from ..database import get_db
 from .. import models, schemas
 
-router = APIRouter(prefix="/movements", tags=["Movements"])
+router = APIRouter(prefix="/core2/movements", tags=["Movements"])
 logger = structlog.get_logger()
 
-@router.get("/{user_id}")
-def get_movements(user_id: int, db: Session = Depends(get_db)):
-    operation_name = f"GET /movements/{user_id}"
+class MovementRequest(BaseModel):
+    userId: int
 
-    # 1. Traemos la cuenta del usuario LOGUEADO (el que hace la consulta)
+@router.post("")
+def get_movements(payload: MovementRequest, db: Session = Depends(get_db)):
+    user_id = payload.userId
+    operation_name = "POST /core2/movements"
+
+    #Traemos la cuenta del usuario LOGUEADO
     account = db.query(models.Account).filter(models.Account.user_id == user_id).first()
     if not account:
         logger.error(
@@ -20,11 +29,11 @@ def get_movements(user_id: int, db: Session = Depends(get_db)):
             operation=operation_name,
             httpStatus=404,
             errorCode="ACCOUNT_NOT_FOUND",
-            event=f"User ID {user_id} no registra cuenta en base de datos"
+            detail=f"User ID {user_id} no registra cuenta en base de datos"
         )
         return []
         
-    # 2. Traemos la info del usuario logueado para saber SU número de teléfono
+    #Traemos la info del usuario logueado para saber SU número de teléfono
     user_info = db.query(models.User).filter(models.User.id == user_id).first()
     if not user_info:
         logger.error(
@@ -32,11 +41,11 @@ def get_movements(user_id: int, db: Session = Depends(get_db)):
             operation=operation_name,
             httpStatus=404,
             errorCode="USER_NOT_FOUND",
-            event=f"User ID {user_id} no existe en la tabla de usuarios"
+            detail=f"User ID {user_id} no existe en la tabla de usuarios"
         )
         return []
     
-    # 3. Traemos todas las transacciones donde esté involucrado
+    # Traemos todas las transacciones donde esté involucrado
     txs = db.query(models.Transaction).filter(
         (models.Transaction.origin_account_id == account.id) | 
         (models.Transaction.destination_phone == user_info.phone_number)
@@ -46,9 +55,7 @@ def get_movements(user_id: int, db: Session = Depends(get_db)):
     for tx in txs:
         tx_time = tx.timestamp
         
-        # 🌟 LA CORRECCIÓN AQUÍ: 
-        # Si el origin_account_id de la transferencia coincide con MI cuenta, yo la envié (egreso).
-        # Si NO coincide, significa que vino de otra cuenta hacia mi teléfono (ingreso).
+        # Lógica de negocio intacta y corregida para ingresos/egresos
         is_egreso = tx.origin_account_id == account.id
         
         formatted_movements.append({
@@ -57,12 +64,12 @@ def get_movements(user_id: int, db: Session = Depends(get_db)):
             "destination_phone": tx.destination_phone,
             "amount": float(tx.amount),
             "timestamp": tx_time.isoformat() if tx_time else None,
-            "type": "egreso" if is_egreso else "ingreso"  # 🚀 Ahora sí enviará "ingreso" si tú eres el receptor
+            "type": "egreso" if is_egreso else "ingreso"
         })
 
     # Log exitoso estructurado con métricas de control
     logger.info(
-        "Consulta de movimientos mixtos completada", 
+        "Consulta de movimientos mixtos completada vía POST", 
         operation=operation_name,
         httpStatus=200,
         user_id=user_id, 
