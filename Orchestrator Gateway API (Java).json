@@ -1,0 +1,248 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Orchestrator Gateway API (Java)",
+        "description": "Componente central encargado del balance, transferencias y resiliencia de la plataforma bancaria",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Generated server url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Orchestrator Financial API",
+            "description": "Endpoints controlados y orquestados para la Fintech polÃ­glota"
+        }
+    ],
+    "paths": {
+        "/api/v1/orchestrator/transfers": {
+            "post": {
+                "tags": [
+                    "Orchestrator Financial API"
+                ],
+                "summary": "EjecuciÃ³n transaccional de transferencias por telÃ©fono con protecciÃ³n Circuit Breaker y token Redis",
+                "operationId": "executeOrchestratedTransfer",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransferRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/orchestrator/notifications/{userId}": {
+            "get": {
+                "tags": [
+                    "Orchestrator Financial API"
+                ],
+                "summary": "Historial de alertas de movimientos procesado localmente en Java",
+                "operationId": "getLocalNotifications",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/orchestrator/movements/{userId}": {
+            "get": {
+                "tags": [
+                    "Orchestrator Financial API"
+                ],
+                "summary": "Consulta de movimientos histÃ³rica orquestada mediante GET",
+                "operationId": "getOrchestratedMovements",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MovementResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/orchestrator/accounts/balance/{userId}": {
+            "get": {
+                "tags": [
+                    "Orchestrator Financial API"
+                ],
+                "summary": "Consulta de saldo segura orquestada hacia Core",
+                "operationId": "getOrchestratedBalance",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BalanceResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "TransferRequest": {
+                "type": "object",
+                "properties": {
+                    "amount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "origin_user_id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "destination_phone": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MovementResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "origin_account_id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "destination_phone": {
+                        "type": "string"
+                    }
+                }
+            },
+            "BalanceResponse": {
+                "type": "object",
+                "properties": {
+                    "balance": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "account_id": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            }
+        }
+    }
+}

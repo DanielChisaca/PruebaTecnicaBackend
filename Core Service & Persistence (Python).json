@@ -1,0 +1,402 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Core Service & Persistence (Python)",
+        "description": "Microservicio encargado de validaciones profundas de negocio y persistencia en PostgreSQL",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/core2/balance": {
+            "post": {
+                "tags": [
+                    "Accounts & Transfers"
+                ],
+                "summary": "Get Balance",
+                "operationId": "get_balance_core2_balance_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "title": "Payload"
+                            },
+                            "example": {
+                                "userId": 1
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AccountBalanceResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/core3/transfers": {
+            "post": {
+                "tags": [
+                    "Accounts & Transfers"
+                ],
+                "summary": "Execute Transfer",
+                "operationId": "execute_transfer_core3_transfers_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransferRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/core2/movements": {
+            "post": {
+                "tags": [
+                    "Movements"
+                ],
+                "summary": "Get Movements",
+                "operationId": "get_movements_core2_movements_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MovementRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/core1/users/register": {
+            "post": {
+                "tags": [
+                    "Users Core 1"
+                ],
+                "summary": "Create User",
+                "operationId": "create_user_core1_users_register_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "title": "User Data"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/core1/users/login": {
+            "post": {
+                "tags": [
+                    "Users Core 1"
+                ],
+                "summary": "Get User For Login",
+                "operationId": "get_user_for_login_core1_users_login_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Health Check",
+                "operationId": "health_check_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AccountBalanceResponse": {
+                "properties": {
+                    "account_id": {
+                        "type": "integer",
+                        "title": "Account Id"
+                    },
+                    "balance": {
+                        "type": "string",
+                        "title": "Balance"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "account_id",
+                    "balance"
+                ],
+                "title": "AccountBalanceResponse"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LoginRequest": {
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "username"
+                ],
+                "title": "LoginRequest"
+            },
+            "MovementRequest": {
+                "properties": {
+                    "userId": {
+                        "type": "integer",
+                        "title": "Userid"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "userId"
+                ],
+                "title": "MovementRequest"
+            },
+            "TransferRequest": {
+                "properties": {
+                    "origin_user_id": {
+                        "type": "integer",
+                        "title": "Origin User Id"
+                    },
+                    "destination_phone": {
+                        "type": "string",
+                        "title": "Destination Phone",
+                        "description": "NÃºmero de telÃ©fono destino"
+                    },
+                    "amount": {
+                        "anyOf": [
+                            {
+                                "type": "number",
+                                "exclusiveMinimum": 0.0
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ],
+                        "title": "Amount"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "origin_user_id",
+                    "destination_phone",
+                    "amount"
+                ],
+                "title": "TransferRequest"
+            },
+            "UserResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    },
+                    "email": {
+                        "type": "string",
+                        "title": "Email"
+                    },
+                    "document_type": {
+                        "type": "string",
+                        "title": "Document Type"
+                    },
+                    "document_id": {
+                        "type": "string",
+                        "title": "Document Id"
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "title": "Phone Number"
+                    },
+                    "password_hash": {
+                        "type": "string",
+                        "title": "Password Hash"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "username",
+                    "email",
+                    "document_type",
+                    "document_id",
+                    "phone_number",
+                    "password_hash"
+                ],
+                "title": "UserResponse"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}
